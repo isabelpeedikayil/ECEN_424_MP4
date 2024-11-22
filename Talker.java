@@ -16,7 +16,7 @@ public class Talker {
             System.out.println("Enter a string of up to 50 characters:");
             String input_string = scanner.nextLine();
             
-            // string error detector because it has to be less than 50 characters
+            // string error detector because it has to be less than 50 characters and has to have a value
             if (input_string.length() > 50){
                 System.out.println("Error. The input string entered is more than 50 characters!");
                 return;
@@ -41,10 +41,12 @@ public class Talker {
             }
 
             // prep the socket
-            DatagramSocket socket = new DatagramSocket(talker_port);
-            InetAddress listenerAddress = InetAddress.getByName(listener_IP);
+            try{
+                DatagramSocket socket = new DatagramSocket(talker_port);
+                InetAddress listenerAddress = InetAddress.getByName(listener_IP);
+
             
-            // talker should send each message (starting with)
+            // talker should send each message (starting with 0)
             String message0 = "0:" + messages.length;
             byte[] buffer = message0.getBytes();
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, listenerAddress, listener_port);
@@ -54,6 +56,7 @@ public class Talker {
             // send messages with the stop and wait protocol
             for (int i = 0; i < messages.length; i++){
                 boolean ack_recieved = false;
+                // max retries is error handling for infinite loop 
                 int retries = 0;
                 int MaxRetries = 10;
 
@@ -98,6 +101,9 @@ public class Talker {
             else{
                 System.out.println("Not all messages were sent successfully");
             }
+        } catch (java.net.BindException e){
+            System.out.println("Port " + talker_port + " is already in use. Please select a different port.");
+        }
         } catch (Exception e){
             e.printStackTrace();
         }
